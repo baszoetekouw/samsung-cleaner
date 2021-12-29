@@ -1,0 +1,256 @@
+#!/bin/bash
+set -e
+
+# first get aapt binary for android
+if ! [ -d android-tools ]
+then
+	git clone git@github.com:JonForShort/android-tools.git
+fi
+
+# check thatthere is exactly one device connected
+NUM_DEV=$( adb devices |grep -E "\tdevice" |wc -l )
+if [ "$NUM_DEV" -ne "1" ]
+then
+	echo "Exectly one device must be conected, found $NUM_DEV"
+	adb devices
+	exit 1
+fi
+
+# copy aapt
+AAPT="/data/local/tmp/aapt"
+adb push android-tools/build/android-11.0.0_r33/aapt/arm64-v8a/bin/aapt "$AAPT"
+
+allow=(
+	com.facebook.katana   # facebook app
+	com.facebook.orca     # messenger app
+	com.microsoft.teams   # MS Teams app
+	com.osp.app.signin    # removeing this breaks settings on android 11!  Lots fo trackers tough
+)
+
+disallow=(
+	com.android.egg  # easter egg
+	com.dsi.ant.*  # weird garmin wireless protocol
+	com.facebook.*
+	com.google.android.apps.youtube.music
+	com.google.android.feedback  # asks for playtore feedback after crash
+	com.google.android.music   # google play music
+	com.google.android.videos  # google play movie
+	com.hiya.*     # Samsung cloud-based spam call blocking
+	com.knox.vpn.proxyhandler # cloud-base call blocking
+	com.microsoft.*
+	com.samsung.SMT  # samsung text-to-speech
+	com.samsung.aasaservice  # security thing, not needed
+	com.samsung.android.aircommandmanager  # S-pen support
+	com.samsung.android.allshare.service.mediashare # samsung allshare installer
+	com.samsung.android.app.appsedge  # edge crap
+	com.samsung.android.app.camera.sticker.* # stickers in camera
+	com.samsung.android.app.clipboardedge # edge crap
+	com.samsung.android.app.cocktailbarservice # edge crap
+	com.samsung.android.app.dressroom # samsung wallpaper
+	com.samsung.android.app.ledbackcover  #cover support
+	com.samsung.android.app.omcagent # Open Market Customization Agent\nBy default, the device prevents from being customized by a source other than Knox Configure
+	com.samsung.android.app.reminder  # bixby
+	com.samsung.android.app.routines # bixby
+	com.samsung.android.app.settings.bixby # bixby
+	com.samsung.android.app.simplesharing # samsung cloud share
+	com.samsung.android.app.spage # bixby home
+	com.samsung.android.app.taskedge # edge crap
+	com.samsung.android.app.tips # tips
+	com.samsung.android.app.watchmanagerstub # samsung watch support
+	com.samsung.android.ardrawing # Samsung AR doodle
+	com.samsung.android.aremoji # camera emoji crap
+	com.samsung.android.arzone # AR portal
+	com.samsung.android.authfw # samsung-account login for aohter apps
+	com.samsung.android.aware.service  # samsung quicksahre
+	com.samsung.android.bbc.bbcagent # knox security apps
+	com.samsung.android.beaconmanager # samsung homeaoutomation
+	com.samsung.android.bixby. # bixby
+	com.samsung.android.bixby.agent # samsung sual messenger
+	com.samsung.android.dqagent # wifi monitoring
+	com.samsung.android.dynamiclock # dynamic wallpaper
+	com.samsung.android.easysetup  # connect to other samsung devices
+	com.samsung.android.fast # samsung vpn
+	com.samsung.android.fmm # samsung device locator
+	com.samsung.android.forest # digital wellbeing
+	com.samsung.android.game. # samsung game crap (hub/store/booster/"optimization")
+	com.samsung.android.hmt.vrsvc # samsung vr gear support
+	com.samsung.android.ipsgeofence # indoor positioning system
+	com.samsung.android.kidsinstaller  #samsung kids home
+	com.samsung.android.knox.analytics.uploader  # knox spyware
+	com.samsung.android.knox.attestation # knox device status verification
+	com.samsung.android.knox.containeragent # replaced by android work profile
+	com.samsung.android.knox.containercore # replaced by andoird work profile
+	com.samsung.android.knox.pushmanager # knox crap
+	com.samsung.android.livestickers # stickers in camera
+	com.samsung.android.location #location for other samsung apps
+	com.samsung.android.lool # device care (spyware)
+	com.samsung.android.mateagent # Samsung Galxy Friends (??)
+	com.samsung.android.mdecservice #  Samsung iOT/watch support
+	com.samsung.android.mdm # remote devcie management
+	com.samsung.android.mdx # link to windows
+	com.samsung.android.mobileservice # samsung accoutn crap
+	com.samsung.android.net.wifi.wifiguider # wii tips (??)
+	com.samsung.android.networkdiagnostic # spyware
+	com.samsung.android.rubin.app # spyware/adware
+	com.samsung.android.samsungpass # samsung pass
+	com.samsung.android.samsungpassautofill # samsungpass
+	com.samsung.android.samsungpositioning # location for samsung apps
+	com.samsung.android.scloud # samsung cloud
+	com.samsung.android.sdk.handwriting # handwriting (only for note)
+	com.samsung.android.sdm.config # sync wirh samsung desk phone
+	com.samsung.android.securitylogagent # monitors system partition
+	com.samsung.android.service.livedrawing # create animated gifs
+	com.samsung.android.service.peoplestripe # aedge crap
+	com.samsung.android.service.stplatform # samsung smart things
+	com.samsung.android.shortcutbackupservice # some samsung cloud thing
+	com.samsung.android.sm. # samart manager ("device optimization")
+	com.samsung.android.smartcallprovider # show info aboutincoming callers
+	com.samsung.android.smartfitting # fit content to screen (?)
+	com.samsung.android.smartmirroring # show screen on tv
+	com.samsung.android.spayfw # sasmsung pay
+	com.samsung.android.stickercenter # stickers for camera
+	com.samsung.android.svcagent # unknown, but can be safely removed
+	com.samsung.android.svoiceime # voice input
+	com.samsung.android.themecenter # gaalxy themes
+	com.samsung.android.themestore # galaxy themes
+	com.samsung.android.visionintelligence # bixby AR
+	com.samsung.android.wifi.softap.resources # ?
+	com.samsung.crane # advanced dialer features
+	com.samsung.desktopsystemui # samsung DEX
+	com.samsung.faceservice # detect faces in photos (probably?)
+	com.samsung.klmsagent # know license crap
+	com.samsung.knox.securefolder # knox secure folder
+	com.samsung.mlp # "media learnign paltform"
+	com.samsung.rcs # possibel future replacement for sms
+	com.samsung.safetyinformation # "don't eat your phone"
+	com.samsung.systemui.bixby2 # bixby
+	com.samsung.ucs.agent.ese # knox stuff
+	com.sec.android.app.DataCreate # samsung test app
+	com.sec.android.app.applinker # samsung nfc stuff
+	com.sec.android.app.billing # samsung billing
+	com.sec.android.app.bluetoothtest # hiodden bt test/spyware
+	com.sec.android.app.chromecustomizations # samsung crap on chroom ehomepage
+	com.sec.android.app.desktoplauncher # samsung DEX
+	com.sec.android.app.dexonpc # samsung DEX
+	com.sec.android.app.magnifier # magnifier
+	com.sec.android.app.parser # laucnh hidden samsung apps
+	com.sec.android.app.quicktool # quciktool
+	com.sec.android.app.ringtoneBR # backup ringtone to samsung
+	com.sec.android.app.safetyassurance # SOS messages
+	com.sec.android.app.samsungapps # galaxy store
+	com.sec.android.app.wlantest # hidden test app
+	com.sec.android.cover.ledcover # led cover support
+	com.sec.android.desktopmode.uiservice # samsung DEX
+	com.sec.android.diagmonagent # send data to samsung
+	com.sec.android.preloadinstaller # spyware for chinese gvmnt
+	com.sec.android.service.health # samssung health
+	com.sec.android.widgetapp.samsungapps # sasmsung crap
+	com.sec.android.widgetapp.webmanual # user namual
+	com.sec.enterprise.knox.attestation # verify device at samsung
+	com.sec.enterprise.knox.cloudmdm.smdms # central device management
+	com.sec.imslogger # logs IMS operations
+	com.sec.location.nsflp2 # samsung location services
+	com.sec.spp.push # samsung push messages
+	de.axelspringer.yana.zeropage # samsung news provider
+)
+
+
+function match_array() {
+	str=$1
+	shift
+	array=("$@")
+	longest_match=0
+	for match in "${array[@]}"
+	do
+		if [[ ${str} == ${match} ]]
+		then
+			if [[ ${#match} -gt $Longest_match ]]
+			then
+				longest_match=${#match}
+			fi
+		fi
+	done
+	echo $longest_match
+}
+
+function match_disallow() {
+	echo $(match_array $1 ${disallow[@]})
+}
+
+function match_allow() {
+	echo $(match_array $1 ${allow[@]})
+}
+
+function is_allowed {
+	str=$1
+	match_allowed=$( match_allow $str )
+	match_disallowed=$( match_disallow $str )
+	if [[ $match_allowed -ge $match_disallowed ]]
+	then
+		return 0 # true (!)
+	else
+		return 1 # false
+	fi
+}
+
+
+function test() {
+	echo $(match_disallow "com.facebook.ikbengek")
+	echo $(match_disallow "com.facebook.hoi")
+	echo $(match_disallow "com.racebook.ikbengek")
+	echo $(match_allow "com.facebook.ikbengek")
+	echo $(match_allow "com.facebook.hoi")
+	echo $(match_allow "com.racebook.ikbengek")
+	echo $(is_allowed "com.facebook.ikbengek")
+	echo $(is_allowed "com.facebook.hoi")
+	echo $(is_allowed "com.racebook.ikbengek")
+
+	is_allowed "com.facebook.ikbengek" && echo "ikbengek is allowed" || echo "ikbengek is not allowed"
+	is_allowed "com.facebook.ikbengok" && echo "ikbengok is allowed" || echo "ikbengok is not allowod"
+}
+
+#test
+#exit
+
+declare -a all_pkg
+
+# list all packages
+for pkg in $( adb shell pm list packages -f | sort )
+do
+	# $pkg had form "package:<apk_path>=<app_id>"
+	pkg=${pkg#package:}
+	apk=${pkg%=*}
+	id=${pkg##*=}
+
+	all_pkg+=($id)
+
+	# get pkg info
+	#echo  adb shell "${AAPT}" dump badging "${apk}"
+	pkg_info=$( adb shell "${AAPT}" dump badging "${apk}" 2>/dev/null || true )
+	version_info=$( grep -E '^package:' <<< "$pkg_info" )
+	name=$( awk -F: '/^application-label:/ { print $2 }'  <<< "$pkg_info" | tr -d "'" )
+
+	printf "%-60.60s\t%.30s\n" "$id" "$name"
+done
+
+# sort
+IFS=$'\n' all_pkg=($(sort <<<"${all_pkg[*]}"))
+unset IFS
+
+echo "======================="
+
+cat > ./do_remove.sh < /dev/null
+cat > ./do_restore.sh < /dev/null
+
+RED="\e[0;31m"
+NC="\e[0m" # No Color
+
+for pkg in ${all_pkg[@]}
+do
+	if ! is_allowed "$pkg"
+	then
+		printf "Will ${RED}remove${NC} $pkg\n"
+		echo "adb shell pm uninstall --user 0 $pkg" >> ./do_remove.sh
+		echo "adb shell pm install-existing $pkg" >> ./do_restore.sh
+	fi
+done
