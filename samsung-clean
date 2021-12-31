@@ -72,7 +72,9 @@ disallow=(
 	com.samsung.android.fast # samsung vpn
 	com.samsung.android.fmm # samsung device locator
 	com.samsung.android.forest # digital wellbeing
-	com.samsung.android.game. # samsung game crap (hub/store/booster/"optimization")
+	com.samsung.android.game.gametools # samsung game crap (hub/store/booster/"optimization")
+	com.samsung.android.game.gamehome # samsung game crap (hub/store/booster/"optimization")
+	com.samsung.android.game.gos # samsung game crap (hub/store/booster/"optimization")
 	com.samsung.android.hmt.vrsvc # samsung vr gear support
 	com.samsung.android.ipsgeofence # indoor positioning system
 	com.samsung.android.kidsinstaller  #samsung kids home
