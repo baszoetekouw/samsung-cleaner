@@ -37,6 +37,7 @@ disallow=(
 	com.google.android.videos  # google play movie
 	com.hiya.*     # Samsung cloud-based spam call blocking
 	com.knox.vpn.proxyhandler # cloud-base call blocking
+	com.linkedin.*
 	com.microsoft.*
 	com.samsung.SMT  # samsung text-to-speech
 	com.samsung.aasaservice  # security thing, not needed
@@ -92,6 +93,7 @@ disallow=(
 	com.samsung.android.mobileservice # samsung accoutn crap
 	com.samsung.android.net.wifi.wifiguider # wii tips (??)
 	com.samsung.android.networkdiagnostic # spyware
+	com.samsung.android.oneconnect # Samsung IoT crap
 	com.samsung.android.rubin.app # spyware/adware
 	com.samsung.android.samsungpass # samsung pass
 	com.samsung.android.samsungpassautofill # samsungpass
@@ -100,6 +102,7 @@ disallow=(
 	com.samsung.android.sdk.handwriting # handwriting (only for note)
 	com.samsung.android.sdm.config # sync wirh samsung desk phone
 	com.samsung.android.securitylogagent # monitors system partition
+	com.samsung.android.service.health # samsung health data
 	com.samsung.android.service.livedrawing # create animated gifs
 	com.samsung.android.service.peoplestripe # aedge crap
 	com.samsung.android.service.stplatform # samsung smart things
@@ -121,7 +124,8 @@ disallow=(
 	com.samsung.faceservice # detect faces in photos (probably?)
 	com.samsung.klmsagent # know license crap
 	com.samsung.knox.securefolder # knox secure folder
-	com.samsung.mlp # "media learnign paltform"
+	com.samsung.mlp # "media learnign platform"
+	com.samsung.oda.service # ?
 	com.samsung.rcs # possibel future replacement for sms
 	com.samsung.safetyinformation # "don't eat your phone"
 	com.samsung.systemui.bixby2 # bixby
