@@ -64,8 +64,7 @@ disallow=(
 	com.samsung.android.aware.service  # samsung quicksahre
 	com.samsung.android.bbc.bbcagent # knox security apps
 	com.samsung.android.beaconmanager # samsung homeaoutomation
-	com.samsung.android.bixby. # bixby
-	com.samsung.android.bixby.agent # samsung sual messenger
+	com.samsung.android.bixby.* # bixby
 	com.samsung.android.dqagent # wifi monitoring
 	com.samsung.android.dynamiclock # dynamic wallpaper
 	com.samsung.android.easysetup  # connect to other samsung devices
